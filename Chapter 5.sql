@@ -200,3 +200,9 @@ FROM us_counties_2010;
 SELECT 
     mode() WITHIN GROUP (ORDER BY p0010001) 
 FROM us_counties_2010;
+
+
+9355 880 223
+
+
+
