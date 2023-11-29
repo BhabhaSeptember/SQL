@@ -238,3 +238,115 @@ SELECT regexp_split_to_array('Phil Mike Tony Steve', ',');
 
 SELECT array_length(regexp_split_to_array('Phil Mike Tony Steve', ' '), 1);
 -------------------------------------------------------------------------------
+
+SELECT to_tsvector('I am walking across the sitting room to sit with you.');
+
+
+-- Creating Search Terms with tsquery
+SELECT to_tsquery('walking & sitting');
+
+
+-- Using the @@ Match Operator for Searching
+SELECT to_tsvector('I am walking across the sitting room') @@ to_tsquery('walking & sitting');
+SELECT to_tsvector('I am walking across the sitting room') @@ to_tsquery('walking & running');
+
+
+-- Creating a table for Full Text Search
+CREATE TABLE president_speeches (
+	 sotu_id serial PRIMARY KEY,
+	 president varchar(100) NOT NULL,
+	 title varchar(250) NOT NULL,
+	 speech_date date NOT NULL,
+	 speech_text text NOT NULL,
+	 search_speech_text tsvector
+);
+COPY president_speeches (president, title, speech_date, speech_text)
+FROM 'C:\SQL\sotu-1946-1977.csv'
+WITH (FORMAT CSV, DELIMITER '|', HEADER OFF, QUOTE '@');
+
+
+SELECT * FROM president_speeches;
+
+
+UPDATE president_speeches
+SET search_speech_text = to_tsvector('english', speech_text);
+
+
+CREATE INDEX search_idx ON president_speeches USING gin(search_speech_text);
+
+
+
+-- Searching Speech Text
+SELECT 
+	president, 
+	speech_date
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('Vietnam')
+ORDER BY speech_date; 
+
+
+-- Showing Search Result Locations
+SELECT 
+	 president,
+	 speech_date,
+	 ts_headline(speech_text, to_tsquery('Vietnam'),
+					 'StartSel = <,
+					 StopSel = >,
+					 MinWords=5,
+					 MaxWords=7,
+					 MaxFragments=1')
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('Vietnam');
+
+
+
+-- Using Multiple Search Terms
+SELECT 
+	 president, 
+	 speech_date,
+	 ts_headline(speech_text, to_tsquery('transportation & !roads'),
+					 'StartSel = <,
+					 StopSel = >,
+					 MinWords=5,
+					 MaxWords=7,
+					 MaxFragments=1')
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('transportation & !roads');
+
+
+-- Searching for Adjacent Words
+SELECT
+	 president,
+	 speech_date,
+	 ts_headline(speech_text, to_tsquery('military <-> defense'),
+					 'StartSel = <,
+					 StopSel = >,
+					 MinWords=5,
+					 MaxWords=7,
+					 MaxFragments=1')
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('military <-> defense');
+
+
+
+-- Ranking Query Matches by Relevance
+SELECT 
+	 president,
+	 speech_date,
+	 ts_rank(search_speech_text,
+	 to_tsquery('war & security & threat & enemy')) AS score
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('war & security & threat & enemy')
+ORDER BY score DESC
+LIMIT 5
+
+
+SELECT 
+	 president,
+	 speech_date,
+	 ts_rank(search_speech_text,
+	 to_tsquery('war & security & threat & enemy'), 2)::numeric AS score
+FROM president_speeches
+WHERE search_speech_text @@ to_tsquery('war & security & threat & enemy')
+ORDER BY score DESC
+LIMIT 5;
