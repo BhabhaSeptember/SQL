@@ -39,28 +39,29 @@ VALUES
     ('Soo', 'Nguyen', 83000, 2),
     ('Janet', 'King', 95000, 2);
 
-------------------------------------------------
-    SELECT *
+
+-- Querying Multiple Tables Using JOIN
+SELECT *
 FROM employees JOIN departments
 ON employees.dept_id = departments.dept_id;
 
 
+-- JOIN Types
 CREATE TABLE schools_left (
     id integer CONSTRAINT left_id_key PRIMARY KEY,
     left_school varchar(30)
 );
-
-CREATE TABLE schools_right (
-    id integer CONSTRAINT right_id_key PRIMARY KEY,
-    right_school varchar(30)
-);
-
 INSERT INTO schools_left (id, left_school) VALUES
     (1, 'Oak Street School'),
     (2, 'Roosevelt High School'),
     (5, 'Washington Middle School'),
     (6, 'Jefferson High School');
 
+
+CREATE TABLE schools_right (
+    id integer CONSTRAINT right_id_key PRIMARY KEY,
+    right_school varchar(30)
+);
 INSERT INTO schools_right (id, right_school) VALUES
     (1, 'Oak Street School'),
     (2, 'Roosevelt High School'),
@@ -68,58 +69,104 @@ INSERT INTO schools_right (id, right_school) VALUES
     (4, 'Chase Magnet Academy'),
     (6, 'Jefferson High School');
 
-----------------------------------------
-    SELECT *
+
+
+-- JOIN 
+SELECT *
 FROM schools_left JOIN schools_right
 ON schools_left.id = schools_right.id;
 
--- Bonus: Also can be specified as INNER JOIN
 
+
+-- INNER JOIN
 SELECT *
 FROM schools_left INNER JOIN schools_right
 ON schools_left.id = schools_right.id;
 
 
 
----------------------------------------------
+-- LEFT JOIN
 SELECT *
 FROM schools_left LEFT JOIN schools_right
 ON schools_left.id = schools_right.id;
 
--------------------------------------------------
+
+
+-- RIGHT JOIN
 SELECT *
 FROM schools_left RIGHT JOIN schools_right
 ON schools_left.id = schools_right.id;
--------------------------------------------------
+
+
+
+-- FULL OUTER JOIN
 SELECT *
 FROM schools_left FULL OUTER JOIN schools_right
 ON schools_left.id = schools_right.id;
----------------------------------------------------
+
+
+
+-- CROSS JOIN
 SELECT *
 FROM schools_left CROSS JOIN schools_right;
----------------------------------------------------
+
+
+
+
+-- Using NULL to Find Rows with Missing Values
 SELECT *
 FROM schools_left LEFT JOIN schools_right
 ON schools_left.id = schools_right.id
 WHERE schools_right.id IS NULL;
--------------------------------------------------------
 
-SELECT schools_left.id,
-       schools_left.left_school,
-       schools_right.right_school
+
+
+
+
+-- Selecting Specific Columns in a Join
+-- Code below throws an error
+SELECT id 
 FROM schools_left LEFT JOIN schools_right
 ON schools_left.id = schools_right.id;
 
---------------------------------------------------------
 
-SELECT lt.id,
-       lt.left_school,
-       rt.right_school
+
+
+-- Code below is correct
+SELECT 
+   schools_left.id,
+   schools_left.left_school,
+   schools_right.right_school
+FROM schools_left LEFT JOIN schools_right
+ON schools_left.id = schools_right.id;
+
+
+
+
+SELECT 
+   schools_left.id AS left_id,
+   schools_left.left_school,
+   schools_right.right_school
+FROM schools_left LEFT JOIN schools_right
+ON schools_left.id = schools_right.id;
+
+
+
+
+
+-- Simplifying JOIN Syntax with Table Aliases
+SELECT 
+   lt.id AS left_id,
+   lt.left_school,
+   rt.right_school
 FROM schools_left AS lt LEFT JOIN schools_right AS rt
 ON lt.id = rt.id;
 
----------------------------------------------------------
 
+
+
+
+-- Joining Multiple Tables
 CREATE TABLE schools_enrollment (
     id integer,
     enrollment integer
@@ -143,15 +190,22 @@ VALUES
     (5, '6-8'),
     (6, '9-12');
 
-SELECT lt.id, lt.left_school, en.enrollment, gr.grades
+
+SELECT 
+    lt.id AS left_id, 
+    lt.left_school, 
+    en.enrollment, 
+    gr.grades
 FROM schools_left AS lt LEFT JOIN schools_enrollment AS en
-    ON lt.id = en.id
-LEFT JOIN schools_grades AS gr
-    ON lt.id = gr.id;
-    -------------------------------------------------------------------
+        ON lt.id = en.id
+    LEFT JOIN schools_grades AS gr
+        ON lt.id = gr.id;
 
 
 
+
+
+ -- Performing Math on Joined Table Columns
 CREATE TABLE us_counties_2000 (
     geo_name varchar(90),              -- County/state name,
     state_us_abbreviation varchar(2),  -- State/U.S. abbreviation
@@ -170,19 +224,23 @@ CREATE TABLE us_counties_2000 (
     p0020002 integer,                  -- Hispanic or Latino
     p0020003 integer                   -- Not Hispanic or Latino:
 );
-
 COPY us_counties_2000
 FROM 'C:\SQL\us_counties_2000.csv'
 WITH (FORMAT CSV, HEADER);
 
-SELECT c2010.geo_name,
+
+
+
+SELECT 
+       c2010.geo_name,
        c2010.state_us_abbreviation AS state,
        c2010.p0010001 AS pop_2010,
        c2000.p0010001 AS pop_2000,
        c2010.p0010001 - c2000.p0010001 AS raw_change,
        round( (CAST(c2010.p0010001 AS numeric(8,1)) - c2000.p0010001)
            / c2000.p0010001 * 100, 1 ) AS pct_change
-FROM us_counties_2010 c2010 INNER JOIN us_counties_2000 c2000
+           
+FROM us_counties_2010 AS c2010 INNER JOIN us_counties_2000 AS c2000
 ON c2010.state_fips = c2000.state_fips
    AND c2010.county_fips = c2000.county_fips
    AND c2010.p0010001 <> c2000.p0010001
