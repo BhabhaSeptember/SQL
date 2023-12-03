@@ -169,3 +169,180 @@ BEGIN
  RAISE NOTICE 'personal_days updated!';
 END;
 $$ LANGUAGE plpgsql;
+
+
+SELECT * FROM teachers
+
+CREATE OR REPLACE FUNCTION update_personal_days()
+RETURNS void AS $$
+BEGIN
+ UPDATE teachers
+ SET personal_days = 
+ CASE WHEN (now() - hire_date) BETWEEN '5 years'::interval 
+ AND '10 years'::interval THEN 4
+ WHEN (now() - hire_date) > '10 years'::interval THEN 5
+ ELSE 3 
+ END;
+ RAISE NOTICE 'personal_days updated!';
+END;
+$$ LANGUAGE plpgsql;
+
+--Running the update function 
+SELECT update_personal_days();
+
+
+SELECT first_name,
+ last_name,
+ hire_date,
+ personal_days
+FROM teachers;
+
+
+
+-- Using Python Language in a Function
+-------------TODO: FIX LANGUAGE ERROR----------------------------------------- 
+CREATE EXTENSION plpythonu;
+
+CREATE OR REPLACE FUNCTION trim_county(input_string text)
+RETURNS text AS $$
+ import re
+ cleaned = re.sub(r' County', '', input_string)
+ return cleaned
+$$ LANGUAGE plpythonu;
+
+
+SELECT geo_name,
+ trim_county(geo_name)
+FROM us_counties_2010
+ORDER BY state_fips, county_fips
+LIMIT 5;
+
+-------------------------------------------------------------------
+
+--Automating Database Actions With Triggers
+--Example 1: Logging Grade Updates to a Table
+
+-- Creating Tables to Track Grades and Updates
+CREATE TABLE grades (
+	 student_id bigint,
+	 course_id bigint,
+	 course varchar(30) NOT NULL,
+	 grade varchar(5) NOT NULL,
+PRIMARY KEY (student_id, course_id)
+);
+INSERT INTO grades
+VALUES
+	 (1, 1, 'Biology 2', 'F'),
+	 (1, 2, 'English 11B', 'D'),
+	 (1, 3, 'World History 11B', 'C'),
+	 (1, 4, 'Trig 2', 'B');
+	 
+SELECT * FROM grades;
+
+CREATE TABLE grades_history (
+	 student_id bigint NOT NULL,
+	 course_id bigint NOT NULL,
+	 change_time timestamp with time zone NOT NULL,
+	 course varchar(30) NOT NULL,
+	 old_grade varchar(5) NOT NULL,
+	 new_grade varchar(5) NOT NULL,
+PRIMARY KEY (student_id, course_id, change_time)
+)
+
+SELECT * FROM grades_history;
+ 
+
+
+
+--Creating the Function and Trigger
+CREATE OR REPLACE FUNCTION record_if_grade_changed()
+RETURNS trigger AS
+$$
+BEGIN
+   IF NEW.grade <> OLD.grade THEN
+      INSERT INTO grades_history (
+			 student_id,
+			 course_id,
+			 change_time,
+			 course,
+			 old_grade,
+			 new_grade)
+ 		VALUES
+			 (OLD.student_id,
+			 OLD.course_id,
+			 now(),
+			 OLD.course,
+			 OLD.grade,
+			 NEW.grade);
+ 		END IF;
+ 		RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+CREATE TRIGGER grades_update
+AFTER UPDATE
+ ON grades
+FOR EACH ROW
+EXECUTE PROCEDURE record_if_grade_changed();
+
+
+-- Testing the Trigger
+UPDATE grades
+SET grade = 'C'
+WHERE student_id = 1 AND course_id = 1;
+
+
+SELECT student_id,
+	 change_time,
+	 course,
+	 old_grade,
+	 new_grade
+FROM grades_history;
+
+
+
+-- Example 2: Automatically Classifying Temperatures
+CREATE TABLE temperature_test (
+	 station_name varchar(50),
+	 observation_date date,
+	 max_temp integer,
+	 min_temp integer,
+	 max_temp_group varchar(40),
+PRIMARY KEY (station_name, observation_date)
+);
+
+
+CREATE OR REPLACE FUNCTION classify_max_temp()
+ RETURNS trigger AS
+$$
+BEGIN
+ CASE 
+	 WHEN NEW.max_temp >= 90 THEN NEW.max_temp_group := 'Hot';
+	 WHEN NEW.max_temp BETWEEN 70 AND 89 THEN NEW.max_temp_group := 'Pleasantly Warm';
+	 WHEN NEW.max_temp BETWEEN 50 AND 69 THEN NEW.max_temp_group := 'Cold';
+	 WHEN NEW.max_temp BETWEEN 33 AND 49 THEN NEW.max_temp_group := 'Unreasonably Cold';
+	 WHEN NEW.max_temp BETWEEN 20 AND 32 THEN NEW.max_temp_group := 'Icey';
+	 ELSE NEW.max_temp_group := 'Inhumane';
+ END CASE;
+ RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- 
+CREATE TRIGGER temperature_insert
+BEFORE INSERT
+ ON temperature_test
+FOR EACH ROW 
+EXECUTE PROCEDURE classify_max_temp();
+
+
+INSERT INTO temperature_test (station_name, observation_date, max_temp, min_temp)
+VALUES
+ ('North Station', '2019/01/19', 10, -3),
+ ('North Station', '2019/3/20/', 28, 19),
+ ('North Station', '2019/5/2', 65, 42),
+ ('North Station', '2019/8/9', 93, 74);
+ 
+SELECT * FROM temperature_test;
