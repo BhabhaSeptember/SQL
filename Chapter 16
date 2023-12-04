@@ -164,3 +164,17 @@ student_id,course_id,course,grade
 
 analysis=# \o 'C:/SQL/query_output.csv'
 analysis=# SELECT * FROM grades;
+
+
+--TODO: Revisit Below commands
+analysis=# createdb -U postgres -e box_office
+
+analysis-# psql -d box_office -U postgres
+analysis-# shp2pgsql -I -s SRID -W encoding shapefile_name table_name | psql -d database -U user
+analysis-# shp2pgsql -I -s 4269 -W Latin1 tl_2010_us_county10.shp us_counties_2010_shp | psql -d
+analysis-# gis_analysis -U postgres
+analysis-#
+
+
+
+
