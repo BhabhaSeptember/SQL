@@ -187,3 +187,30 @@ COPY (
  )
 TO 'C:\SQL\us_counties_mill_export.txt'
 WITH (FORMAT CSV, HEADER, DELIMITER '|');
+
+
+
+
+
+
+
+
+
+
+
+-- --Practice Excercises
+-- COPY movie_actor
+-- FROM 'C:\SQL\movie_actor.txt'
+-- WITH (FORMAT CSV, HEADER, Delimiter ':', QUOTE '#');
+
+
+-- COPY ( SELECT geo_name, state_us_abbreviation, housing_unit_count_100_percent
+--         FROM us_counties_2010 
+--          ORDER BY housing_unit_count_100_percent DESC
+--           LIMIT 20
+-- )
+-- TO 'C:\SQL\us_counties_2010_housing_unit_count_export.csv'
+-- WITH (FORMAT CSV, HEADER)
+
+
+-- 3. No, numeric(8,3) would work
