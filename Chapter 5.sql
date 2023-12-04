@@ -206,3 +206,6 @@ FROM us_counties_2010;
 
 
 
+
+--Practice Exercises
+

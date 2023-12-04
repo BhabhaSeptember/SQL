@@ -16,34 +16,12 @@ CONSTRAINT emp_details_unique
 SELECT * FROM employees;
 INSERT INTO employees (first_name,surname,gender,address,email)
 VALUES
-	('Paul'),
-	('Shezi'),
-	('M'),
-	('29 Browning Drive, Observatory, Cape Town, 7925 '),
-	('pshezi@outlook.com');
-	('2'),
-	('4'),
-	('3');
+	('2', 'Joe', 'Shezi', 'M', '29 Browning Drive, Observatory, Cape Town, 7925', 'jshezi@outlook.com', 2, 4, 3 );
+
 INSERT INTO employees (first_name)
 
 ---------------------------------------------------------------------
---TODO: Not part of employeesDB, just a test to fix errors of table above
-CREATE TABLE test (
-	emp_id bigserial PRIMARY KEY,
-	first_name varchar(100) NOT NULL,
-	surname varchar(100) NOT NULL,
-	gender varchar(1)
-	)
-INSERT INTO test (first_name, surname)
-VALUES
-	('Paul',
-	('Shezi');
-	 
--- 	('1'),
 
-	
--- 	('M');
------------------------------------------------------------------
 CREATE TABLE department (
 	depart_id bigserial PRIMARY KEY,
 	depart_name varchar(100) NOT NULL,
