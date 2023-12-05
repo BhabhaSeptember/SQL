@@ -1,4 +1,4 @@
---TODO: FIX BELOW CODE
+--TODO: Add more employees
 CREATE TABLE employees (
 	emp_id bigserial PRIMARY KEY,
 	first_name varchar(100) NOT NULL,
@@ -13,14 +13,13 @@ CREATE TABLE employees (
 CONSTRAINT emp_details_unique 
   UNIQUE (emp_id, email, salary_id, overtime_id)	
 );
-SELECT * FROM employees;
-INSERT INTO employees (first_name,surname,gender,address,email)
+INSERT INTO employees
 VALUES
-	('2', 'Joe', 'Shezi', 'M', '29 Browning Drive, Observatory, Cape Town, 7925', 'jshezi@outlook.com', 2, 4, 3 );
+	('2', 'Makhosi', 'Mshengu', 'F', '67 Carey Road, Pelham, Pietermaritzburg, 3201', 'mmshengu@yahoo.co.za', 1, 5, 5, 1);
+	('1', 'Joe', 'Johnson', 'M', '29 Browning Road, Observatory, Cape Town, 7925', 'jshezi@outlook.com', 2, 4, 3 );
+SELECT * FROM employees;
 
-INSERT INTO employees (first_name)
 
----------------------------------------------------------------------
 
 CREATE TABLE department (
 	depart_id bigserial PRIMARY KEY,
@@ -73,9 +72,37 @@ SELECT * FROM salaries;
 
 CREATE TABLE overtime_hours (
 	overtime_id bigserial PRIMARY KEY,
-	overtime_hours interval,
+	overtime_hours time with timezone,
 	CONSTRAINT overtime_unique UNIQUE (overtime_id, overtime_hours)
 );
-INSERT INTO overtime_hours (overtime_hours)
-VALUES 
-	(12/40/50::interval);
+INSERT INTO overtime_hours
+VALUES
+	('1', '09:00:50')
+
+
+
+
+
+	-- JOINING TABLES
+
+SELECT * FROM employees;
+SELECT * FROM department;
+SELECT * FROM overtime_hours;
+
+SELECT *
+FROM department JOIN employees
+ON department.depart_id = employees.depart_id
+
+
+SELECT * 
+FROM salaries JOIN employees 
+ON salaries.salary_id = employees.salary_id
+
+
+SELECT * 
+FROM roles JOIN employees
+ON roles.role_id = employees.role_id
+
+SELECT * 
+FROM overtime_hours JOIN employees
+ON overtime_hours.overtime_id = employees.overtime_id
