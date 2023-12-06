@@ -1,4 +1,4 @@
---TODO: Add more employees
+--TODO: Test out unique constraints
 CREATE TABLE employees (
 	emp_id bigserial PRIMARY KEY,
 	first_name varchar(100) NOT NULL,
@@ -16,7 +16,12 @@ CONSTRAINT emp_details_unique
 INSERT INTO employees
 VALUES
 	('2', 'Makhosi', 'Mshengu', 'F', '67 Carey Road, Pelham, Pietermaritzburg, 3201', 'mmshengu@yahoo.co.za', 1, 5, 5, 1);
-	('1', 'Joe', 'Johnson', 'M', '29 Browning Road, Observatory, Cape Town, 7925', 'jshezi@outlook.com', 2, 4, 3 );
+	('5', 'Olivia' ,'Oaks', 'F', '1 Albion Road, Rondebosch Oaks, Rondebosch, Cape Town, 7701', 'olioaks@yahoo.com', 2, 2, 2, 2);
+INSERT INTO employees
+VALUES
+	('1', 'Joe', 'Johnson', 'M', '29 Browning Road, Observatory, Cape Town, 7925', 'jshezi@outlook.com', 2, 4, 3 );	
+	('3', 'Brian', 'Becker', 'M', '44 Shakespeare Road, Matlosana, Orkney, 2619', 'brianbekker@outlook.com', 5, 1, 1 ),
+	('4', 'Paula', 'Peterson', 'F', '7 Marshall Road, Humewood, Pretoria, 0001', 'ppeter@gmail.com', 4, 3, 4 );
 SELECT * FROM employees;
 
 
@@ -77,8 +82,8 @@ CREATE TABLE overtime_hours (
 );
 INSERT INTO overtime_hours
 VALUES
-	('1', '09:00:50')
-
+	('1', '09:00:50'),
+	('2', '15:30:00');
 
 
 
@@ -87,6 +92,8 @@ VALUES
 
 SELECT * FROM employees;
 SELECT * FROM department;
+SELECT * FROM roles;
+SELECT * FROM salaries;
 SELECT * FROM overtime_hours;
 
 SELECT *
@@ -106,3 +113,17 @@ ON roles.role_id = employees.role_id
 SELECT * 
 FROM overtime_hours JOIN employees
 ON overtime_hours.overtime_id = employees.overtime_id
+
+
+
+--Showing that constraints are working
+INSERT INTO employees
+VALUES
+	('1', 'Joe', 'Jackson', 'M', '29 Scott Road, Rondebosch, Cape Town, 7925', 'jjackson@gmail.com', 2, 4, 3 );
+--RETURNS ERROR:  Key (emp_id)=(1) already exists.duplicate key value violates unique constraint "employees_pkey" 
+
+
+INSERT INTO employees
+VALUES
+	(3, 'Joe', 'Jackson', 'M', '29 Scott Road, Rondebosch, Cape Town, 7925', 'jjackson@gmail.com', 6, 4, 3)
+--RETURNS ERROR:  Key (depart_id)=(6) is not present in table "department".insert or update on table "employees" violates foreign key constraint "employees_depart_id_fkey" 
