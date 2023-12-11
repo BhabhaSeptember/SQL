@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS public.zip_code
     zip_code character varying(4),
     city character varying(100) NOT NULL,
     province character varying(25) NOT NULL,
-    PRIMARY KEY (zip_code)
--- 	CONSTRAINT zip_code_length CHECK zip_code = numeric(4,0)
+    PRIMARY KEY (zip_code),
+	CHECK (length(zip_code) = 4)
 );
+
+
 SELECT * FROM zip_code
-DROP TABLE zip_code
-INSERT INTO zip_code (zip_code)
-VALUES
-	
+DROP TABLE zip_code CASCADE;
+
 CREATE TABLE IF NOT EXISTS public.status
 (
     status_id bigserial,
@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS public.seeking
     looking_for character varying(250) NOT NULL,
     PRIMARY KEY (seeking_id)
 );
+
+
 
 ALTER TABLE IF EXISTS public.my_contacts
     ADD CONSTRAINT prof_id FOREIGN KEY (prof_id)
@@ -132,5 +134,165 @@ ALTER TABLE IF EXISTS public.contact_seeking
     NOT VALID;
 
 END;
-
 -----------------------------------------------------------------------------------------
+
+INSERT INTO public.profession (prof_id, profession)
+VALUES
+	(1, 'Advocate'),
+	(2, 'Biokinetics'),
+	(3, 'Chef'),
+	(4, 'Dentist'),
+	(5, 'EMR'),
+	(6, 'Forensic Science'),
+	(7, 'Geological Science'),
+	(8, 'Hospitality'),
+	(9, 'Inspector'),
+	(10, 'Janitor'),
+	(11, 'Kindergarten Teacher'),
+	(12, 'Landscaping'),
+	(13, 'Medical Doctor'),
+	(14, 'Nurse'),
+	(15, 'Optometrist');
+SELECT * FROM public.profession;
+
+
+
+INSERT INTO public.zip_code
+VALUES
+	('5319', 'Queens Town', 'Eastern Cape'),
+	('6219', 'Uitenhage', 'Eastern Cape'),
+	('9301', 'Willows', 'Free State'),
+	('9460', 'Welkom', 'Free State'),
+	('1441', 'Heidelberg', 'Gauteng'),
+	('1827', 'Lenasia', 'Gauteng'),
+	('3201', 'Pietermaritzburg', 'KwaZulu-Natal'),
+	('4000', 'Durban', 'KwaZulu-Natal'),
+	('0700', 'Polokwane', 'Limpopo'),
+	('0850', 'Tzaneen', 'Limpopo'),
+	('1200', 'Mbombela', 'Mpumalanga'),
+	('1300', 'Barberton', 'Mpumalanga'),
+	('7000', 'De Aar', 'Northern Cape'),
+	('8240', 'Springbok','Northern Cape'),
+	('2740', 'Lichtenburg', 'North West'),
+	('2610', 'Ottosdal', 'North West'),
+	('7200', 'Hermanus', 'Western Cape'),
+	('6900', 'Laingsburg', 'Western Cape');
+SELECT * FROM public.zip_code;
+
+
+
+
+INSERT INTO public.status
+VALUES
+	(1, 'Open-door Relationship'),
+	(2, 'Recently Single'),
+	(3, 'Single for years & Co-parenting'),
+	(4, 'Recently Separated'),
+	(5, 'Separated for years'),
+	(6, 'Separated & Healthily Co-parenting'),
+	(7, 'Divorced'),
+	(8, 'Divorced more than once'),
+	(9, 'Divorced & Healthily Co-parenting'),
+	(10, 'Polygamous Marriage Situation');
+SELECT * FROM public.status;	
+
+
+INSERT INTO public.interests
+VALUES
+	(1, 'Sleeping AKA Resting', 'Eating Popcorn', 'Watching TV'),
+	(2, 'Reading Romantic Novels', 'Reading Medical Journals', 'Eating Salads'),
+	(3, 'Running Marathons', 'Jogging in the Afternoons', 'Hiking on Weekends'),
+	(4, 'Swimming in the Nile', 'Waterpolo Wednesdays', 'Shark Cage Diving'),
+	(5, 'Bungee Jumping', 'Sky Diving', 'Flying Kites'),
+	(6, 'Visiting Art Galleries', 'Visiting Museums', 'Reading English Literature'),
+	(7, 'Shopping in Milan', 'Drinking Champagne', 'Smoking Cuban Cigars'),
+	(8, 'Modeling', 'Going to the gymn', 'Doing Pilates'),
+	(9, 'Star Gazing', 'Bingeing on Star Wars', 'Talking about Telescopes'),
+	(10, 'Writing Poems', 'Live Jam Sessions', 'Reading Shakespeare'),
+	(11, 'Human Rights Activist', 'Community Development', 'Daily Prayer at Local Church'),
+	(12, 'Cooking', 'Restaurant-hopping', 'Watching Cooking Channels'),
+	(13, 'Decorating', 'Gardening', 'Visiting Flea Markets'),
+	(14, 'Painting', 'Bowling', 'Playing Video Games'),
+	(15, 'Driving around the City', 'Spinning Cars', 'Fixing cars');
+SELECT * FROM public.interests;	
+
+
+
+INSERT INTO public.seeking
+VALUES
+	(1, 'One night stand - Honesty is the best policy'),
+	(2, 'Friends with long-term benefits i.e. you can date other people, but I take first priority'),
+	(3, 'Normal, healthy relationship'),
+	(4, 'Sugar partner - someone to fund my lifestyle'),
+	(5, 'Sister wife to join a family of 4 wives - 3 months probation');
+SELECT * FROM public.seeking;
+
+
+
+
+SELECT * FROM contact_seeking;
+SELECT * FROM zip_code;
+
+INSERT INTO public.my_contacts
+VALUES
+	(1, 'Zulu', 'Zandile', '0661234567', 'zulu@gmail.com', 'F', '1965/01/01', 1, '5319', 2);
+
+
+SELECT 
+	my_contacts.last_name,
+	my_contacts.first_name,
+	profession.profession,
+	zip_code.city,
+	zip_code.province,
+	
+	
+FROM my_contacts JOIN zip_code
+SELECT * FROM my_contacts;
+
+
+
+-- TESTING CONSTRAINTS
+--Testing UNIQUE Constraint
+SELECT * FROM public.profession;
+INSERT INTO public.profession
+VALUES
+	(11, 'Inspector' );
+--Returns [ ERROR:  duplicate key value violates unique constraint "profession_pkey" ]	
+
+
+
+
+--Testing CHECK Constraint
+INSERT INTO public.zip_code
+VALUES
+	('0', 'test', 'test');
+--Returns [ ERROR:  new row for relation "zip_code" violates check constraint "zip_code_zip_code_check" ]
+
+
+
+
+--Testing prof_id Foreign Key Constraint
+INSERT INTO public.my_contacts
+VALUES
+	(1, 'test surname', 'test name', '0123456789', 'test email', 'T', '2000/01/03', '20', '0010', 1);
+--Returns [ ERROR:  insert or update on table "my_contacts" violates foreign key constraint "prof_id" ]
+
+
+
+
+
+--Testing status_id Foreign Key Constraint
+INSERT INTO public.my_contacts
+VALUES
+	(1, 'test surname', 'test name', '0123456789', 'test email', 'T', '2000/01/03', '1', '0010', 200);
+--Returns [ERROR:  insert or update on table "my_contacts" violates foreign key constraint "status" ]
+
+
+
+
+
+--Testing zip_code Foreign Key Constraint
+INSERT INTO public.my_contacts
+VALUES
+	(1, 'test surname', 'test name', '0123456789', 'test email', 'T', '2000/01/03', 1, '0000', 2);
+--Returns [ ERROR:  insert or update on table "my_contacts" violates foreign key constraint "zip_code" ]
